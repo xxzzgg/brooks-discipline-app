@@ -318,7 +318,9 @@ function contextSummary(state: DecisionState) {
         : "Trend / Breakout";
     }
     if (state.trendBranch === "Channel") {
-      return state.channelWidth ? `Trend / Channel / ${state.channelWidth}` : "Trend / Channel";
+      return state.channelWidth
+        ? `Trend / Channel / ${state.channelWidth}`
+        : "Trend / Channel";
     }
     return "Trend";
   }
@@ -332,12 +334,15 @@ function contextSummary(state: DecisionState) {
 
 function playbook(state: DecisionState) {
   if (state.contextRoot === "Trend" && state.trendBranch === "Breakout") {
-    if (state.breakoutStrength === "Strong") return "BTC / STC：强突破优先 continuation。";
-    if (state.breakoutStrength === "Weak") return "Enter on PB：弱突破更适合等突破回踩。";
+    if (state.breakoutStrength === "Strong")
+      return "BTC / STC：强突破优先 continuation。";
+    if (state.breakoutStrength === "Weak")
+      return "Enter on PB：弱突破更适合等突破回踩。";
   }
 
   if (state.contextRoot === "Trend" && state.trendBranch === "Channel") {
-    if (state.channelWidth === "Tight") return "Trade in Dir of BO：紧通道优先顺势。";
+    if (state.channelWidth === "Tight")
+      return "Trade in Dir of BO：紧通道优先顺势。";
     if (state.channelWidth === "Broad") return "BLSHS Sloped：宽通道更看位置。";
   }
 
@@ -352,7 +357,13 @@ function playbook(state: DecisionState) {
 function suggestedSetups(state: DecisionState) {
   if (state.contextRoot === "Trend" && state.trendBranch === "Breakout") {
     if (state.breakoutStrength === "Strong") {
-      return ["Breakout", "BO-PB-Long", "BO-PB-Short", "Strong-Trend-Stop-Long", "Strong-Trend-Stop-Short"];
+      return [
+        "Breakout",
+        "BO-PB-Long",
+        "BO-PB-Short",
+        "Strong-Trend-Stop-Long",
+        "Strong-Trend-Stop-Short",
+      ];
     }
     if (state.breakoutStrength === "Weak") {
       return ["BO-PB-Long", "BO-PB-Short", "H2", "L2", "Failed-Breakout"];
@@ -361,7 +372,14 @@ function suggestedSetups(state: DecisionState) {
 
   if (state.contextRoot === "Trend" && state.trendBranch === "Channel") {
     if (state.channelWidth === "Tight") {
-      return ["H2", "L2", "H3", "L3", "Strong-Trend-Stop-Long", "Strong-Trend-Stop-Short"];
+      return [
+        "H2",
+        "L2",
+        "H3",
+        "L3",
+        "Strong-Trend-Stop-Long",
+        "Strong-Trend-Stop-Short",
+      ];
     }
     if (state.channelWidth === "Broad") {
       return ["BO-PB-Long", "BO-PB-Short", "Failed-Breakout", "MTR"];
@@ -376,13 +394,22 @@ function suggestedSetups(state: DecisionState) {
 }
 
 function suggestedEntries(state: DecisionState) {
-  if (state.setup === "H1" || state.setup === "H2" || state.setup === "H3") return ["stop", "wait"];
-  if (state.setup === "L1" || state.setup === "L2" || state.setup === "L3") return ["stop", "wait"];
-  if (state.setup === "BO-PB-Long" || state.setup === "BO-PB-Short") return ["stop", "wait"];
-  if (state.setup === "Strong-Trend-Stop-Long" || state.setup === "Strong-Trend-Stop-Short") return ["stop"];
+  if (state.setup === "H1" || state.setup === "H2" || state.setup === "H3")
+    return ["stop", "wait"];
+  if (state.setup === "L1" || state.setup === "L2" || state.setup === "L3")
+    return ["stop", "wait"];
+  if (state.setup === "BO-PB-Long" || state.setup === "BO-PB-Short")
+    return ["stop", "wait"];
+  if (
+    state.setup === "Strong-Trend-Stop-Long" ||
+    state.setup === "Strong-Trend-Stop-Short"
+  )
+    return ["stop"];
   if (state.setup === "Breakout") return ["close", "stop", "wait"];
-  if (state.setup === "Failed-Breakout" || state.setup === "MTR") return ["stop", "wait", "limit"];
-  if (state.setup === "Range-Buy-Low" || state.setup === "Range-Sell-High") return ["limit", "stop", "wait"];
+  if (state.setup === "Failed-Breakout" || state.setup === "MTR")
+    return ["stop", "wait", "limit"];
+  if (state.setup === "Range-Buy-Low" || state.setup === "Range-Sell-High")
+    return ["limit", "stop", "wait"];
   return [];
 }
 
@@ -405,7 +432,8 @@ function evaluate(state: DecisionState) {
   const cautions: string[] = [];
   const passes: string[] = [];
 
-  if (!state.marketState) blockers.push("还没有判断市场是强趋势、弱趋势还是震荡区间。");
+  if (!state.marketState)
+    blockers.push("还没有判断市场是强趋势、弱趋势还是震荡区间。");
   else passes.push(`市场状态：${state.marketState}`);
 
   if (!state.contextRoot) blockers.push("Context 根节点未定义。");
@@ -416,13 +444,17 @@ function evaluate(state: DecisionState) {
 
   const quickValues = Object.values(state.quickGate);
   const missingQuick = quickValues.filter((value) => value === null).length;
-  const failedQuick = QUICK_GATES.filter((item) => state.quickGate[item.key] === false);
+  const failedQuick = QUICK_GATES.filter(
+    (item) => state.quickGate[item.key] === false,
+  );
 
   if (missingQuick > 0) {
     blockers.push(`二元快速筛选还有 ${missingQuick} 项未回答。`);
   }
   if (failedQuick.length > 0) {
-    blockers.push(`二元筛选未通过：${failedQuick.map((item) => item.title).join("、")}。`);
+    blockers.push(
+      `二元筛选未通过：${failedQuick.map((item) => item.title).join("、")}。`,
+    );
   } else if (quickValues.every((value) => value === true)) {
     passes.push("二元快速筛选全部通过。");
   }
@@ -446,11 +478,19 @@ function evaluate(state: DecisionState) {
   const allowedSetups = suggestedSetups(state);
   const allowedEntries = suggestedEntries(state);
 
-  if (state.setup && allowedSetups.length > 0 && !allowedSetups.includes(state.setup)) {
+  if (
+    state.setup &&
+    allowedSetups.length > 0 &&
+    !allowedSetups.includes(state.setup)
+  ) {
     cautions.push("当前 setup 不是这个 Context 下的优先候选。");
   }
 
-  if (state.entry && allowedEntries.length > 0 && !allowedEntries.includes(state.entry)) {
+  if (
+    state.entry &&
+    allowedEntries.length > 0 &&
+    !allowedEntries.includes(state.entry)
+  ) {
     cautions.push("当前 entry 与这个 setup 不够匹配。");
   }
 
@@ -480,16 +520,23 @@ function evaluate(state: DecisionState) {
 
   if (
     state.contextRoot === "TR" &&
-    (state.setup === "Strong-Trend-Stop-Long" || state.setup === "Strong-Trend-Stop-Short")
+    (state.setup === "Strong-Trend-Stop-Long" ||
+      state.setup === "Strong-Trend-Stop-Short")
   ) {
     blockers.push("TR 背景下不能用强趋势 stop entry 逻辑。");
   }
 
   if (state.entry === "close" && state.quickGate.stopEntryConfirm !== true) {
-    cautions.push("当前没有走 Stop Entry 确认，只有最强 breakout 才适合直接 close 进。");
+    cautions.push(
+      "当前没有走 Stop Entry 确认，只有最强 breakout 才适合直接 close 进。",
+    );
   }
 
-  const verdict: VerdictLevel = blockers.length ? "blocked" : cautions.length ? "wait" : "ready";
+  const verdict: VerdictLevel = blockers.length
+    ? "blocked"
+    : cautions.length
+      ? "wait"
+      : "ready";
   const headline =
     verdict === "ready"
       ? "可以执行：背景、setup 质量和 entry 已经一致。"
@@ -508,15 +555,28 @@ function App() {
   const result = evaluate(state);
   const allowedSetups = suggestedSetups(state);
   const allowedEntries = suggestedEntries(state);
+  const contextReady =
+    (state.contextRoot === "Trend" &&
+      ((state.trendBranch === "Breakout" && !!state.breakoutStrength) ||
+        (state.trendBranch === "Channel" && !!state.channelWidth))) ||
+    (state.contextRoot === "TR" && !!state.trWidth);
+  const visibleSetups = contextReady
+    ? SETUPS.filter((item) => allowedSetups.includes(item.value))
+    : [];
 
   const summary = useMemo(() => {
     const total = journal.length;
     const ready = journal.filter((entry) => entry.verdict === "ready").length;
-    const blocked = journal.filter((entry) => entry.verdict === "blocked").length;
+    const blocked = journal.filter(
+      (entry) => entry.verdict === "blocked",
+    ).length;
     return { total, ready, blocked };
   }, [journal]);
 
-  function update<K extends keyof DecisionState>(key: K, value: DecisionState[K]) {
+  function update<K extends keyof DecisionState>(
+    key: K,
+    value: DecisionState[K],
+  ) {
     setState((current) => ({ ...current, [key]: value }));
   }
 
@@ -564,13 +624,21 @@ function App() {
         <div>
           <Badge variant="outline">Brooks Price Action</Badge>
           <h1>盘中快速决策树</h1>
+
           <p>先定大背景，再用二元筛选过滤 setup 质量，最后才决定 entry。</p>
+          <h2 style={{ color: "#f40" }}>时间永远来不及 所有更不用着急</h2>
         </div>
         <div className="header-actions">
-          <Button variant={view === "decision" ? "default" : "outline"} onClick={() => setView("decision")}>
+          <Button
+            variant={view === "decision" ? "default" : "outline"}
+            onClick={() => setView("decision")}
+          >
             快速决策
           </Button>
-          <Button variant={view === "journal" ? "default" : "outline"} onClick={() => setView("journal")}>
+          <Button
+            variant={view === "journal" ? "default" : "outline"}
+            onClick={() => setView("journal")}
+          >
             决策日志
           </Button>
         </div>
@@ -582,7 +650,9 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle>0. 二元快速筛选</CardTitle>
-                <CardDescription>任何一项是 No，这笔单通常先不做。</CardDescription>
+                <CardDescription>
+                  任何一项是 No，这笔单通常先不做。
+                </CardDescription>
               </CardHeader>
               <CardContent className="gate-grid">
                 {QUICK_GATES.map((item) => (
@@ -594,14 +664,22 @@ function App() {
                     <div className="gate-actions">
                       <Button
                         size="sm"
-                        variant={state.quickGate[item.key] === true ? "default" : "outline"}
+                        variant={
+                          state.quickGate[item.key] === true
+                            ? "default"
+                            : "outline"
+                        }
                         onClick={() => setQuickGate(item.key, true)}
                       >
                         Yes
                       </Button>
                       <Button
                         size="sm"
-                        variant={state.quickGate[item.key] === false ? "destructive" : "outline"}
+                        variant={
+                          state.quickGate[item.key] === false
+                            ? "destructive"
+                            : "outline"
+                        }
                         onClick={() => setQuickGate(item.key, false)}
                       >
                         No
@@ -615,12 +693,19 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle>1. 第一层：大背景 Context</CardTitle>
-                <CardDescription>先回答：强趋势、弱趋势，还是震荡区间。</CardDescription>
+                <CardDescription>
+                  先回答：强趋势、弱趋势，还是震荡区间。
+                </CardDescription>
               </CardHeader>
               <CardContent className="trade-form">
                 <Label>
                   <span>Market State</span>
-                  <Select value={state.marketState} onChange={(event) => update("marketState", event.target.value as MarketState)}>
+                  <Select
+                    value={state.marketState}
+                    onChange={(event) =>
+                      update("marketState", event.target.value as MarketState)
+                    }
+                  >
                     <option value="">请选择</option>
                     <option value="strong-trend">Strong Trend</option>
                     <option value="weak-trend">Weak Trend</option>
@@ -629,7 +714,15 @@ function App() {
                 </Label>
                 <Label>
                   <span>EMA Direction</span>
-                  <Select value={state.emaDirection} onChange={(event) => update("emaDirection", event.target.value as DecisionState["emaDirection"])}>
+                  <Select
+                    value={state.emaDirection}
+                    onChange={(event) =>
+                      update(
+                        "emaDirection",
+                        event.target.value as DecisionState["emaDirection"],
+                      )
+                    }
+                  >
                     <option value="">请选择</option>
                     <option value="up">Up</option>
                     <option value="down">Down</option>
@@ -638,7 +731,15 @@ function App() {
                 </Label>
                 <Label>
                   <span>Price vs EMA</span>
-                  <Select value={state.emaSide} onChange={(event) => update("emaSide", event.target.value as DecisionState["emaSide"])}>
+                  <Select
+                    value={state.emaSide}
+                    onChange={(event) =>
+                      update(
+                        "emaSide",
+                        event.target.value as DecisionState["emaSide"],
+                      )
+                    }
+                  >
                     <option value="">请选择</option>
                     <option value="above">Above EMA</option>
                     <option value="below">Below EMA</option>
@@ -647,7 +748,12 @@ function App() {
                 </Label>
                 <Label>
                   <span>Always In</span>
-                  <Select value={state.alwaysIn} onChange={(event) => update("alwaysIn", event.target.value as AlwaysIn)}>
+                  <Select
+                    value={state.alwaysIn}
+                    onChange={(event) =>
+                      update("alwaysIn", event.target.value as AlwaysIn)
+                    }
+                  >
                     <option value="">请选择</option>
                     <option value="Long">Always In Long</option>
                     <option value="Short">Always In Short</option>
@@ -662,7 +768,9 @@ function App() {
                     {["Trend", "TR"].map((value) => (
                       <Button
                         key={value}
-                        variant={state.contextRoot === value ? "default" : "outline"}
+                        variant={
+                          state.contextRoot === value ? "default" : "outline"
+                        }
                         onClick={() =>
                           setState((current) => ({
                             ...current,
@@ -688,8 +796,14 @@ function App() {
                         {["Breakout", "Channel"].map((value) => (
                           <Button
                             key={value}
-                            variant={state.trendBranch === value ? "default" : "outline"}
-                            onClick={() => update("trendBranch", value as TrendBranch)}
+                            variant={
+                              state.trendBranch === value
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              update("trendBranch", value as TrendBranch)
+                            }
                           >
                             {value}
                           </Button>
@@ -704,8 +818,17 @@ function App() {
                           {["Strong", "Weak"].map((value) => (
                             <Button
                               key={value}
-                              variant={state.breakoutStrength === value ? "default" : "outline"}
-                              onClick={() => update("breakoutStrength", value as BreakoutStrength)}
+                              variant={
+                                state.breakoutStrength === value
+                                  ? "default"
+                                  : "outline"
+                              }
+                              onClick={() =>
+                                update(
+                                  "breakoutStrength",
+                                  value as BreakoutStrength,
+                                )
+                              }
                             >
                               {value}
                             </Button>
@@ -721,8 +844,14 @@ function App() {
                           {["Tight", "Broad"].map((value) => (
                             <Button
                               key={value}
-                              variant={state.channelWidth === value ? "default" : "outline"}
-                              onClick={() => update("channelWidth", value as Width)}
+                              variant={
+                                state.channelWidth === value
+                                  ? "default"
+                                  : "outline"
+                              }
+                              onClick={() =>
+                                update("channelWidth", value as Width)
+                              }
                             >
                               {value}
                             </Button>
@@ -740,7 +869,9 @@ function App() {
                       {["Tight", "Broad"].map((value) => (
                         <Button
                           key={value}
-                          variant={state.trWidth === value ? "default" : "outline"}
+                          variant={
+                            state.trWidth === value ? "default" : "outline"
+                          }
                           onClick={() => update("trWidth", value as Width)}
                         >
                           {value}
@@ -760,7 +891,9 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle>2. 哪一方更强</CardTitle>
-                <CardDescription>方向要与背景和 Always In 一致。</CardDescription>
+                <CardDescription>
+                  方向要与背景和 Always In 一致。
+                </CardDescription>
               </CardHeader>
               <CardContent className="segmented">
                 {[
@@ -771,7 +904,9 @@ function App() {
                   <Button
                     key={value}
                     variant={state.side === value ? "default" : "outline"}
-                    onClick={() => update("side", value as DecisionState["side"])}
+                    onClick={() =>
+                      update("side", value as DecisionState["side"])
+                    }
                   >
                     {label}
                   </Button>
@@ -782,25 +917,38 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle>3. Setup 库</CardTitle>
-                <CardDescription>高亮项是当前 Context 下优先看的 setup。</CardDescription>
+                <CardDescription>
+                  选完 Context 和强度后，这里只显示当前背景下该检查的 setup。
+                </CardDescription>
               </CardHeader>
-              <CardContent className="option-grid setup-library-grid">
-                {SETUPS.map((item) => (
-                  <button
-                    key={item.value}
-                    className={cn(
-                      "option-card",
-                      state.setup === item.value && "is-selected",
-                      allowedSetups.includes(item.value) && "is-recommended",
-                    )}
-                    onClick={() => update("setup", item.value)}
-                  >
-                    <strong>{item.title}</strong>
-                    <span>{item.fit}</span>
-                    <em>{item.family}</em>
-                  </button>
-                ))}
-              </CardContent>
+              {contextReady ? (
+                <CardContent className="option-grid setup-library-grid">
+                  {visibleSetups.map((item) => (
+                    <button
+                      key={item.value}
+                      className={cn(
+                        "option-card",
+                        state.setup === item.value && "is-selected",
+                        "is-recommended",
+                      )}
+                      onClick={() => update("setup", item.value)}
+                    >
+                      <strong>{item.title}</strong>
+                      <span>{item.fit}</span>
+                      <em>{item.family}</em>
+                    </button>
+                  ))}
+                </CardContent>
+              ) : (
+                <CardContent>
+                  <div className="callout">
+                    <strong>先完成 Context 过滤</strong>
+                    <p>
+                      先选 `Trend / TR`，再选 `Breakout / Channel / Tight / Broad / Strong / Weak`，系统才会把 setup 缩小到当前该看的范围。
+                    </p>
+                  </div>
+                </CardContent>
+              )}
               {state.setup ? (
                 <CardContent>
                   <div className="callout">
@@ -814,13 +962,27 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle>4. Entry</CardTitle>
-                <CardDescription>Brooks 默认优先 Stop Entry，其他方式必须有足够理由。</CardDescription>
+                <CardDescription>
+                  Brooks 默认优先 Stop Entry，其他方式必须有足够理由。
+                </CardDescription>
               </CardHeader>
               <CardContent className="option-grid entry-grid">
                 {[
-                  ["stop", "Stop Entry", "下一根超过 signal bar 高/低点 1 tick 再触发。"],
-                  ["close", "Enter on Close", "只给最强 breakout / FOMO trend。"],
-                  ["limit", "Limit Entry", "更适合 broad channel / range 边缘。"],
+                  [
+                    "stop",
+                    "Stop Entry",
+                    "下一根超过 signal bar 高/低点 1 tick 再触发。",
+                  ],
+                  [
+                    "close",
+                    "Enter on Close",
+                    "只给最强 breakout / FOMO trend。",
+                  ],
+                  [
+                    "limit",
+                    "Limit Entry",
+                    "更适合 broad channel / range 边缘。",
+                  ],
                   ["wait", "Wait", "等回踩、second entry 或 confirm bar。"],
                 ].map(([value, title, detail]) => (
                   <button
@@ -828,7 +990,8 @@ function App() {
                     className={cn(
                       "option-card",
                       state.entry === value && "is-selected",
-                      allowedEntries.includes(value as Entry) && "is-recommended",
+                      allowedEntries.includes(value as Entry) &&
+                        "is-recommended",
                     )}
                     onClick={() => update("entry", value as Entry)}
                   >
@@ -842,16 +1005,28 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle>5. 最终核对</CardTitle>
-                <CardDescription>如果这一步答不清，setup 再漂亮也先不做。</CardDescription>
+                <CardDescription>
+                  如果这一步答不清，setup 再漂亮也先不做。
+                </CardDescription>
               </CardHeader>
               <CardContent className="trade-form">
                 <Label>
                   <span>Instrument</span>
-                  <Input value={state.instrument} onChange={(event) => update("instrument", event.target.value)} />
+                  <Input
+                    value={state.instrument}
+                    onChange={(event) =>
+                      update("instrument", event.target.value)
+                    }
+                  />
                 </Label>
                 <Label>
                   <span>Direction</span>
-                  <Select value={state.direction} onChange={(event) => update("direction", event.target.value as Direction)}>
+                  <Select
+                    value={state.direction}
+                    onChange={(event) =>
+                      update("direction", event.target.value as Direction)
+                    }
+                  >
                     <option value="">请选择</option>
                     <option value="long">Long</option>
                     <option value="short">Short</option>
@@ -859,15 +1034,28 @@ function App() {
                 </Label>
                 <Label>
                   <span>Stop</span>
-                  <Input value={state.stop} onChange={(event) => update("stop", event.target.value)} placeholder="signal bar 另一端 + 1-2 tick" />
+                  <Input
+                    value={state.stop}
+                    onChange={(event) => update("stop", event.target.value)}
+                    placeholder="signal bar 另一端 + 1-2 tick"
+                  />
                 </Label>
                 <Label>
                   <span>Minimum Target</span>
-                  <Input value={state.target} onChange={(event) => update("target", event.target.value)} placeholder="至少 1R，理想 2R" />
+                  <Input
+                    value={state.target}
+                    onChange={(event) => update("target", event.target.value)}
+                    placeholder="至少 1R，理想 2R"
+                  />
                 </Label>
                 <Label>
                   <span>Trade Type</span>
-                  <Select value={state.style} onChange={(event) => update("style", event.target.value as TradeStyle)}>
+                  <Select
+                    value={state.style}
+                    onChange={(event) =>
+                      update("style", event.target.value as TradeStyle)
+                    }
+                  >
                     <option value="">请选择</option>
                     <option value="swing">Swing</option>
                     <option value="scalp">Scalp</option>
@@ -875,18 +1063,32 @@ function App() {
                 </Label>
                 <Label className="wide-field">
                   <span>认错条件</span>
-                  <Textarea rows={3} value={state.invalidation} onChange={(event) => update("invalidation", event.target.value)} />
+                  <Textarea
+                    rows={3}
+                    value={state.invalidation}
+                    onChange={(event) =>
+                      update("invalidation", event.target.value)
+                    }
+                  />
                 </Label>
                 <Label className="wide-field">
                   <span>Notes</span>
-                  <Textarea rows={3} value={state.notes} onChange={(event) => update("notes", event.target.value)} placeholder="支撑/阻力、signal bar、前序逻辑、Always In 理由。" />
+                  <Textarea
+                    rows={3}
+                    value={state.notes}
+                    onChange={(event) => update("notes", event.target.value)}
+                    placeholder="支撑/阻力、signal bar、前序逻辑、Always In 理由。"
+                  />
                 </Label>
               </CardContent>
               <CardContent className="check-grid">
                 {FINAL_CHECKS.map(([key, label]) => (
                   <button
                     key={key}
-                    className={cn("check-item", state.checks[key] && "is-selected")}
+                    className={cn(
+                      "check-item",
+                      state.checks[key] && "is-selected",
+                    )}
                     onClick={() => toggleFinalCheck(key)}
                   >
                     {label}
@@ -899,35 +1101,56 @@ function App() {
           <aside className="verdict-panel">
             <Card className={cn("verdict-card", `verdict-${result.verdict}`)}>
               <CardHeader>
-                <Badge variant={result.verdict === "ready" ? "default" : result.verdict === "wait" ? "secondary" : "destructive"}>
+                <Badge
+                  variant={
+                    result.verdict === "ready"
+                      ? "default"
+                      : result.verdict === "wait"
+                        ? "secondary"
+                        : "destructive"
+                  }
+                >
                   {result.verdict.toUpperCase()}
                 </Badge>
                 <CardTitle>{result.headline}</CardTitle>
-                <CardDescription>背景支持的方向上，setup 才有意义。</CardDescription>
+                <CardDescription>
+                  背景支持的方向上，setup 才有意义。
+                </CardDescription>
               </CardHeader>
               <CardContent className="verdict-content">
                 <section>
                   <h3>阻止项</h3>
-                  {(result.blockers.length ? result.blockers : ["无关键阻止项。"]).map((item) => (
+                  {(result.blockers.length
+                    ? result.blockers
+                    : ["无关键阻止项。"]
+                  ).map((item) => (
                     <p key={item}>{item}</p>
                   ))}
                 </section>
                 <section>
                   <h3>警告</h3>
-                  {(result.cautions.length ? result.cautions : ["暂无警告。"]).map((item) => (
+                  {(result.cautions.length
+                    ? result.cautions
+                    : ["暂无警告。"]
+                  ).map((item) => (
                     <p key={item}>{item}</p>
                   ))}
                 </section>
                 <section>
                   <h3>通过项</h3>
-                  {(result.passes.length ? result.passes : ["等待更多信息。"]).map((item) => (
+                  {(result.passes.length
+                    ? result.passes
+                    : ["等待更多信息。"]
+                  ).map((item) => (
                     <p key={item}>{item}</p>
                   ))}
                 </section>
               </CardContent>
               <CardContent className="action-row">
                 <Button onClick={saveDecision}>保存决策</Button>
-                <Button variant="outline" onClick={clearDraft}>清空草稿</Button>
+                <Button variant="outline" onClick={clearDraft}>
+                  清空草稿
+                </Button>
               </CardContent>
             </Card>
           </aside>
@@ -938,7 +1161,8 @@ function App() {
             <CardHeader>
               <CardTitle>决策日志</CardTitle>
               <CardDescription>
-                共 {summary.total} 条，READY {summary.ready}，BLOCKED {summary.blocked}。
+                共 {summary.total} 条，READY {summary.ready}，BLOCKED{" "}
+                {summary.blocked}。
               </CardDescription>
             </CardHeader>
           </Card>
@@ -948,7 +1172,9 @@ function App() {
               <Card>
                 <CardHeader>
                   <CardTitle>暂无记录</CardTitle>
-                  <CardDescription>保存一次快速决策后会出现在这里。</CardDescription>
+                  <CardDescription>
+                    保存一次快速决策后会出现在这里。
+                  </CardDescription>
                 </CardHeader>
               </Card>
             ) : (
@@ -956,25 +1182,45 @@ function App() {
                 <Card key={entry.id}>
                   <CardHeader>
                     <div className="journal-heading">
-                      <Badge variant={entry.verdict === "ready" ? "default" : entry.verdict === "wait" ? "secondary" : "destructive"}>
+                      <Badge
+                        variant={
+                          entry.verdict === "ready"
+                            ? "default"
+                            : entry.verdict === "wait"
+                              ? "secondary"
+                              : "destructive"
+                        }
+                      >
                         {entry.verdict}
                       </Badge>
                       <span>{entry.savedAt}</span>
                     </div>
                     <CardTitle>{entry.headline}</CardTitle>
                     <CardDescription>
-                      {entry.instrument} / {entry.direction || "no direction"} / {contextSummary(entry)} / {setupMeta(entry.setup)?.title || "no setup"}
+                      {entry.instrument} / {entry.direction || "no direction"} /{" "}
+                      {contextSummary(entry)} /{" "}
+                      {setupMeta(entry.setup)?.title || "no setup"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="journal-detail">
                     <p>{entry.notes || "无 notes"}</p>
                     <div className="pill-line">
                       <Badge variant="outline">{entryMeta(entry.entry)}</Badge>
-                      <Badge variant="outline">Always In {entry.alwaysIn || "none"}</Badge>
-                      <Badge variant="outline">Stop {entry.stop || "none"}</Badge>
-                      <Badge variant="outline">Target {entry.target || "none"}</Badge>
+                      <Badge variant="outline">
+                        Always In {entry.alwaysIn || "none"}
+                      </Badge>
+                      <Badge variant="outline">
+                        Stop {entry.stop || "none"}
+                      </Badge>
+                      <Badge variant="outline">
+                        Target {entry.target || "none"}
+                      </Badge>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => deleteEntry(entry.id)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteEntry(entry.id)}
+                    >
                       删除
                     </Button>
                   </CardContent>

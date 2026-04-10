@@ -15,6 +15,7 @@
   --accent: #f4d35e;
   --accent-foreground: #1d2430;
   --destructive: #c2410c;
+  /* --destructive: #ee392c; */
   --destructive-foreground: #ffffff;
   --border: #d6dbe1;
   --input: #cfd6df;
@@ -381,16 +382,30 @@ button {
 }
 
 .callout {
-  padding: 14px;
-  border-left: 4px solid var(--destructive);
+  padding: 16px;
+  border: 1px solid rgba(194, 65, 12, 0.28);
+  border-left: 6px solid var(--destructive);
   border-radius: var(--radius);
-  background: rgba(194, 65, 12, 0.08);
+  background:
+    linear-gradient(135deg, rgba(194, 65, 12, 0.18), rgba(245, 158, 11, 0.12)),
+    #fff7ed;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+    0 10px 22px rgba(194, 65, 12, 0.08);
+}
+
+.callout strong {
+  display: inline-block;
+  color: #9a3412;
+  font-size: 15px;
+  line-height: 1.2;
 }
 
 .callout p {
   margin: 6px 0 0;
-  color: var(--muted-foreground);
-  line-height: 1.55;
+  color: #7c2d12;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
 .question-list {
